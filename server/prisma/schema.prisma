@@ -1,0 +1,35 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  username  String    @unique
+  password  String
+  avatarUrl String?
+  createdAt DateTime  @default(now())
+  
+  // Relations
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  content   String
+  images    String?  // JSON string for storing image URLs array
+  createdAt DateTime @default(now())
+  
+  // Sender (Required)
+  senderId  Int
+  sender    User     @relation("SentMessages", fields: [senderId], references: [id])
+  
+  // Receiver (Optional - Null means public chat)
+  receiverId Int?
+  receiver   User?   @relation("ReceivedMessages", fields: [receiverId], references: [id])
+}
