@@ -28,7 +28,7 @@ export default function LoginPage() {
         setError('')
 
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
 
             // 1. Login
             const res = await fetch(`${apiUrl}/api/auth/login`, {
@@ -102,7 +102,7 @@ export default function LoginPage() {
                         <div className="w-24 h-24 rounded-full bg-white/10 border-2 border-white/20 flex items-center justify-center overflow-hidden mb-2 relative group cursor-pointer"
                             onClick={() => document.getElementById('avatar-input-login')?.click()}>
                             {preview ? (
-                                <img src={preview} alt="Avatar Preview" className="w-full h-full object-cover" />
+                                <img src={preview} alt="Avatar preview" className="w-full h-full object-cover" />
                             ) : (
                                 <span className="text-indigo-200 text-xs text-center px-2">Update Photo (Optional)</span>
                             )}

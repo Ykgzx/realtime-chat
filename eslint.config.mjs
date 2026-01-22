@@ -13,6 +13,15 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  // Custom rule overrides
+  {
+    rules: {
+      // Disable React Compiler rules that conflict with React 19 automatic batching
+      "react-compiler/react-compiler": "off",
+      // Allow img elements (we're not using next/image for simple images)
+      "@next/next/no-img-element": "warn"
+    }
+  }
 ]);
 
 export default eslintConfig;

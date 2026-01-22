@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { getSocket } from '@/lib/socket'
-import { X, Image as ImageIcon, Send, User, Loader2, LogOut, MessageSquare, Users, Settings } from 'lucide-react'
+import { X, Image as ImageIcon, Send, User, Loader2, LogOut, MessageSquare, Users, Settings, Menu } from 'lucide-react'
 import { useAuth } from '../auth-provider'
 import { useRouter } from 'next/navigation'
 import { ProfileModal } from '@/components/profile-modal'
@@ -26,7 +26,7 @@ interface ChatUser {
 const getAvatarUrl = (url?: string | null) => {
   if (!url) return null
   if (url.startsWith('http')) return url
-  return `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}${url}`
+  return `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}${url}`
 }
 
 export default function ChatPage() {
@@ -38,18 +38,15 @@ export default function ChatPage() {
   const [selectedImages, setSelectedImages] = useState<string[]>([])
   const [isConnected, setIsConnected] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
 
   // Private Messaging State
-  const [onlineUsers, setOnlineUsers] = useState<string[]>([]) // List of socket IDs or usernames? Server sends socket IDs mapped to userId. Actually server sends array of keys which are userIds? No, let's check server code.
-  // Server code: io.emit('online-users', Array.from(onlineUsers.keys())) -> keys are userIds (number)
   const [activeUserIds, setActiveUserIds] = useState<number[]>([])
 
   const [allUsers, setAllUsers] = useState<ChatUser[]>([]) // All registered users for sidebar
   const [selectedUser, setSelectedUser] = useState<ChatUser | null>(null) // null = Global Chat
 
-  const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set())
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const typingTimeout = useRef<NodeJS.Timeout | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const socket = getSocket()
@@ -64,7 +61,7 @@ export default function ChatPage() {
   // Fetch Users
   useEffect(() => {
     if (!token) return
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/users`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/users`, {
       headers: { Authorization: `Bearer ${token}` } // Server currently logic doesn't require auth for this but good practice
     })
       .then(res => res.json())
@@ -137,8 +134,8 @@ export default function ChatPage() {
     setMessages([]) // Clear old messages
 
     const url = selectedUser
-      ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/messages?userId=${selectedUser.id}`
-      : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/messages`
+      ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/messages?userId=${selectedUser.id}`
+      : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/messages`
 
     fetch(url, {
       headers: {
@@ -217,8 +214,17 @@ export default function ChatPage() {
   return (
     <div className="flex h-screen bg-slate-900 text-white overflow-hidden font-sans">
 
+      {/* Mobile Sidebar Overlay */}
+      {isMobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setIsMobileSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-80 bg-slate-800 border-r border-slate-700 flex flex-col hidden md:flex">
+      <aside className={`w-80 bg-slate-800 border-r border-slate-700 flex flex-col fixed md:relative inset-y-0 left-0 z-50 transform transition-transform duration-300 md:transform-none ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        }`}>
         <div className="p-4 border-b border-slate-700 flex items-center justify-between">
           <h1 className="font-bold text-lg flex items-center gap-2">
             <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center">
@@ -233,7 +239,10 @@ export default function ChatPage() {
 
         <div className="flex-1 overflow-y-auto p-2 space-y-1">
           <div
-            onClick={() => setSelectedUser(null)}
+            onClick={() => {
+              setSelectedUser(null)
+              setIsMobileSidebarOpen(false)
+            }}
             className={`p-3 rounded-xl cursor-pointer flex items-center gap-3 transition-colors ${selectedUser === null ? 'bg-indigo-600 shadow-md' : 'hover:bg-slate-700'}`}
           >
             <div className="w-10 h-10 rounded-full bg-slate-600 flex items-center justify-center">
@@ -254,14 +263,17 @@ export default function ChatPage() {
             return (
               <div
                 key={u.id}
-                onClick={() => setSelectedUser(u)}
+                onClick={() => {
+                  setSelectedUser(u)
+                  setIsMobileSidebarOpen(false)
+                }}
                 className={`p-3 rounded-xl cursor-pointer flex items-center gap-3 transition-colors ${selectedUser?.id === u.id ? 'bg-indigo-600 shadow-md' : 'hover:bg-slate-700'}`}
               >
                 <div className="relative">
                   {u.avatarUrl ? (
                     <img
                       src={getAvatarUrl(u.avatarUrl) || ''}
-                      alt={u.username}
+                      alt={`${u.username} avatar`}
                       className="w-10 h-10 rounded-full object-cover bg-slate-600"
                     />
                   ) : (
@@ -285,7 +297,7 @@ export default function ChatPage() {
             {user.avatarUrl ? (
               <img
                 src={getAvatarUrl(user.avatarUrl) || ''}
-                alt={user.username}
+                alt={`${user.username} avatar`}
                 className="w-9 h-9 rounded-full object-cover bg-slate-600"
               />
             ) : (
@@ -317,8 +329,16 @@ export default function ChatPage() {
       <main className="flex-1 flex flex-col bg-slate-900 relative">
         {/* Mobile Header */}
         <header className="h-16 px-4 border-b border-slate-800 flex items-center justify-between md:hidden bg-slate-800">
+          <button
+            onClick={() => setIsMobileSidebarOpen(true)}
+            className="p-2 hover:bg-slate-700 rounded-lg transition"
+          >
+            <Menu size={24} />
+          </button>
           <h2 className="font-bold">{selectedUser ? selectedUser.username : 'Global Chat'}</h2>
-          <button onClick={logout}><LogOut size={20} /></button>
+          <button onClick={logout} className="p-2 hover:bg-slate-700 rounded-lg transition">
+            <LogOut size={20} />
+          </button>
         </header>
 
         {/* Desktop Header */}
@@ -329,7 +349,7 @@ export default function ChatPage() {
                 {selectedUser.avatarUrl ? (
                   <img
                     src={getAvatarUrl(selectedUser.avatarUrl) || ''}
-                    alt={selectedUser.username}
+                    alt={`${selectedUser.username} avatar`}
                     className="w-10 h-10 rounded-full object-cover bg-slate-700"
                   />
                 ) : (
@@ -366,7 +386,7 @@ export default function ChatPage() {
                 {msg.userAvatar ? (
                   <img
                     src={getAvatarUrl(msg.userAvatar) || ''}
-                    alt={msg.user}
+                    alt={`${msg.user} avatar`}
                     className="w-8 h-8 rounded-full object-cover shadow-sm shrink-0"
                   />
                 ) : (
@@ -383,7 +403,7 @@ export default function ChatPage() {
 
                   <div className={`px-4 py-3 rounded-2xl shadow-sm ${isMe ? 'bg-indigo-600 text-white rounded-tr-sm' : 'bg-slate-800 text-slate-200 rounded-tl-sm'}`}>
                     {msg.images && msg.images.map((img, idx) => (
-                      <img key={idx} src={img} className="max-w-full rounded-lg mb-2 cursor-pointer hover:opacity-90" onClick={() => window.open(img)} />
+                      <img key={idx} src={img} alt={`Shared image ${idx + 1}`} className="max-w-full rounded-lg mb-2 cursor-pointer hover:opacity-90" onClick={() => window.open(img)} />
                     ))}
                     <p className="whitespace-pre-wrap leading-relaxed">{msg.text}</p>
                   </div>
@@ -403,7 +423,7 @@ export default function ChatPage() {
               <div className="absolute bottom-full left-0 mb-4 p-2 bg-slate-800 rounded-xl shadow-xl flex gap-2 overflow-x-auto max-w-full border border-slate-700">
                 {selectedImages.map((img, i) => (
                   <div key={i} className="relative group">
-                    <img src={img} className="h-16 w-16 object-cover rounded-lg" />
+                    <img src={img} alt={`Selected image ${i + 1}`} className="h-16 w-16 object-cover rounded-lg" />
                     <button onClick={() => setSelectedImages(prev => prev.filter((_, idx) => idx !== i))} className="absolute -top-2 -right-2 bg-red-500 rounded-full p-0.5"><X size={12} /></button>
                   </div>
                 ))}

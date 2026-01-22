@@ -1,0 +1,113 @@
+﻿
+C:\Users\patsa\realtime-chat\app\auth-provider.tsx
+  41:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\patsa\realtime-chat\app\auth-provider.tsx:41:13
+  39 |
+  40 |         if (storedToken && storedUser) {
+> 41 |             setToken(storedToken)
+     |             ^^^^^^^^ Avoid calling setState() directly within an effect
+  42 |             setUser(JSON.parse(storedUser))
+  43 |         }
+  44 |         setIsLoading(false)  react-hooks/set-state-in-effect
+
+C:\Users\patsa\realtime-chat\app\chat\page.tsx
+    5:39  warning  'User' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
+   39:10  warning  'isConnected' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
+   76:13  error    Error: Cannot modify local variables after render completes
+
+This argument is a function which may reassign or mutate `socket` after render, which can cause inconsistent behavior on subsequent renders. Consider using state instead.
+
+C:\Users\patsa\realtime-chat\app\chat\page.tsx:76:13
+   74 |
+   75 |   // Socket Connection & Events
+>  76 |   useEffect(() => {
+      |             ^^^^^^^
+>  77 |     if (!token || !user) return
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  78 |
+      ΓÇª
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 126 |     }
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 127 |   }, [token, user])
+      | ^^^^ This function may (indirectly) reassign or modify `socket` after render
+  128 |
+  129 |   // Fetch History when switching rooms
+  130 |   useEffect(() => {
+
+C:\Users\patsa\realtime-chat\app\chat\page.tsx:79:5
+  77 |     if (!token || !user) return
+  78 |
+> 79 |     socket.auth = { token }
+     |     ^^^^^^ This modifies `socket`
+  80 |     socket.connect()
+  81 |
+  82 |     const handleConnect = () => setIsConnected(true)                          react-hooks/immutability
+  127:6   warning  React Hook useEffect has a missing dependency: 'socket'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       react-hooks/exhaustive-deps
+  133:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\patsa\realtime-chat\app\chat\page.tsx:133:5
+  131 |     if (!user) return
+  132 |
+> 133 |     setMessages([]) // Clear old messages
+      |     ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  134 |
+  135 |     const url = selectedUser
+  136 |       ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/messages?userId=${selectedUser.id}`  react-hooks/set-state-in-effect
+  258:21  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @next/next/no-img-element
+  282:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @next/next/no-img-element
+  326:19  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @next/next/no-img-element
+  363:19  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @next/next/no-img-element
+  382:23  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @next/next/no-img-element
+  402:21  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @next/next/no-img-element
+
+C:\Users\patsa\realtime-chat\app\login\page.tsx
+   83:23  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  105:33  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  155:24  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+
+C:\Users\patsa\realtime-chat\app\register\page.tsx
+  60:23  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  82:33  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\patsa\realtime-chat\components\profile-modal.tsx
+   92:23  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  125:33  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\patsa\realtime-chat\components\qr-code-modal.tsx
+  19:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\patsa\realtime-chat\components\qr-code-modal.tsx:19:13
+  17 |             // Construct URL based on current window location (frontend URL)
+  18 |             // This automatically handles localhost vs LAN IP
+> 19 |             setUrl(`${window.location.protocol}//${window.location.hostname}:${window.location.port}`)
+     |             ^^^^^^ Avoid calling setState() directly within an effect
+  20 |         }
+  21 |     }, [])
+  22 |  react-hooks/set-state-in-effect
+
+C:\Users\patsa\realtime-chat\server.ts
+   82:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  145:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+Γ£û 22 problems (10 errors, 12 warnings)
+

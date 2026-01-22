@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:./dev.db"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -23,6 +23,7 @@ model Message {
   id        Int      @id @default(autoincrement())
   content   String
   images    String?  // JSON string for storing image URLs array
+  isPrivate Boolean  @default(false)
   createdAt DateTime @default(now())
   
   // Sender (Required)

@@ -18,6 +18,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
     const [error, setError] = useState('')
     const fileInputRef = useRef<HTMLInputElement>(null)
 
+
     useEffect(() => {
         if (user) {
             setUsername(user.username)
@@ -25,11 +26,14 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                 // Construct full URL if relative
                 const url = user.avatarUrl.startsWith('http')
                     ? user.avatarUrl
-                    : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}${user.avatarUrl}`
+                    : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}${user.avatarUrl}`
                 setPreview(url)
             } else {
                 setPreview('')
             }
+        } else {
+            setUsername('')
+            setPreview('')
         }
     }, [user, isOpen])
 
@@ -49,7 +53,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
         try {
             let avatarUrl = user?.avatarUrl
 
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
             const token = localStorage.getItem('token')
 
             if (!token) throw new Error('Not authenticated')
@@ -122,7 +126,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                         <div className="w-24 h-24 rounded-full bg-white/10 border-2 border-white/20 flex items-center justify-center overflow-hidden mb-2 relative group cursor-pointer"
                             onClick={() => fileInputRef.current?.click()}>
                             {preview ? (
-                                <img src={preview} alt="Avatar Preview" className="w-full h-full object-cover" />
+                                <img src={preview} alt="Avatar preview" className="w-full h-full object-cover" />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center bg-slate-800 text-slate-400">
                                     <ImageIcon size={32} />
