@@ -208,11 +208,16 @@ app.prepare().then(() => {
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const formatted = messages.map((m: any) => ({
+                id: m.id,
                 user: m.sender.username,
                 userAvatar: m.sender.avatarUrl,
                 text: m.content,
                 images: m.images ? JSON.parse(m.images) : undefined,
-                timestamp: m.createdAt.getTime()
+                timestamp: m.createdAt.getTime(),
+                senderId: m.senderId,
+                receiverId: m.receiverId,
+                isPrivate: m.isPrivate,
+                readAt: m.readAt ? m.readAt.getTime() : null
             }))
 
             res.json(formatted)
@@ -283,12 +288,16 @@ app.prepare().then(() => {
                 })
 
                 const msgPayload = {
+                    id: newMessage.id,
                     user: user.username,
                     userAvatar: user.avatarUrl,
                     text: newMessage.content,
                     images: data.images,
                     timestamp: newMessage.createdAt.getTime(),
-                    isPrivate: newMessage.isPrivate
+                    isPrivate: newMessage.isPrivate,
+                    senderId: user.userId,
+                    receiverId: receiverId ? Number(receiverId) : null,
+                    readAt: null as number | null
                 }
 
                 if (receiverId) {
@@ -323,6 +332,68 @@ app.prepare().then(() => {
                 if (receiverSocketId) io.to(receiverSocketId).emit('stop-typing', user.username)
             } else {
                 socket.broadcast.emit('stop-typing', user.username)
+            }
+        })
+
+        // Mark messages as read
+        socket.on('mark-read', async (data: { senderId: number }) => {
+            try {
+                // Update all unread messages from this sender to this user
+                await prisma.message.updateMany({
+                    where: {
+                        senderId: data.senderId,
+                        receiverId: user.userId,
+                        readAt: null
+                    },
+                    data: { readAt: new Date() }
+                })
+
+                // Notify the sender that their messages were read
+                const senderSocketId = onlineUsers.get(data.senderId)
+                if (senderSocketId) {
+                    io.to(senderSocketId).emit('message-read', {
+                        readBy: user.userId,
+                        readAt: Date.now()
+                    })
+                }
+            } catch (error) {
+                console.error('Mark read error:', error)
+            }
+        })
+
+        // Delete message
+        socket.on('delete-message', async (data: { messageId: number }) => {
+            try {
+                // Find the message first to verify ownership
+                const message = await prisma.message.findUnique({
+                    where: { id: data.messageId }
+                })
+
+                if (!message || message.senderId !== user.userId) {
+                    return // Only sender can delete their own messages
+                }
+
+                // Delete from database
+                await prisma.message.delete({
+                    where: { id: data.messageId }
+                })
+
+                const deletePayload = { messageId: data.messageId }
+
+                // Broadcast deletion to relevant users
+                if (message.receiverId) {
+                    // Private message — notify receiver and sender
+                    const receiverSocketId = onlineUsers.get(message.receiverId)
+                    if (receiverSocketId) {
+                        io.to(receiverSocketId).emit('message-deleted', deletePayload)
+                    }
+                    socket.emit('message-deleted', deletePayload)
+                } else {
+                    // Global message — notify everyone
+                    io.emit('message-deleted', deletePayload)
+                }
+            } catch (error) {
+                console.error('Delete message error:', error)
             }
         })
 

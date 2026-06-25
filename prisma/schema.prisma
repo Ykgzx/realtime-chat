@@ -25,6 +25,7 @@ model Message {
   images    String?  // JSON string for storing image URLs array
   isPrivate Boolean  @default(false)
   createdAt DateTime @default(now())
+  readAt    DateTime? // null = unread, DateTime = read at that time
   
   // Sender (Required)
   senderId  Int

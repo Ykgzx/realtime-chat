@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '../auth-provider'
+import { getApiUrl } from '@/lib/api'
 
 export default function RegisterPage() {
     const [username, setUsername] = useState('')
@@ -26,7 +27,7 @@ export default function RegisterPage() {
 
         try {
             let avatarUrl = ''
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+            const apiUrl = getApiUrl()
 
             // Upload Avatar first if selected
             if (avatar) {

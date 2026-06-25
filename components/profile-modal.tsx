@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { X, Image as ImageIcon, Check, Loader2 } from 'lucide-react'
 import { useAuth } from '../app/auth-provider'
+import { getApiUrl } from '@/lib/api'
 
 interface ProfileModalProps {
     isOpen: boolean
@@ -26,7 +27,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                 // Construct full URL if relative
                 const url = user.avatarUrl.startsWith('http')
                     ? user.avatarUrl
-                    : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}${user.avatarUrl}`
+                    : `${getApiUrl()}${user.avatarUrl}`
                 setPreview(url)
             } else {
                 setPreview('')
@@ -53,7 +54,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
         try {
             let avatarUrl = user?.avatarUrl
 
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+            const apiUrl = getApiUrl()
             const token = localStorage.getItem('token')
 
             if (!token) throw new Error('Not authenticated')

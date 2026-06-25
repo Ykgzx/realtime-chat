@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '../auth-provider'
 import { QRCodeModal } from '@/components/qr-code-modal'
+import { getApiUrl } from '@/lib/api'
 import { Smartphone } from 'lucide-react'
 
 export default function LoginPage() {
@@ -28,7 +29,7 @@ export default function LoginPage() {
         setError('')
 
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+            const apiUrl = getApiUrl()
 
             // 1. Login
             const res = await fetch(`${apiUrl}/api/auth/login`, {
